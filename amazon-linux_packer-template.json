@@ -1,7 +1,8 @@
 {
     "variables": {
         "aws_region": "{{env `AWS_REGION`}}",
-        "aws_ami_name": "amazon-linux_{{isotime \"02Jan2006\"}}"
+        "aws_ami_name": "amazon-linux_{{isotime \"02Jan2006\"}}",
+        "provision_script": "ami_golden_script.sh"    
     },
 
     "builders": [{
@@ -40,7 +41,7 @@
                 "sudo yum install -y elinks screen",
                 "sudo chmod u+x /tmp/{{user `provision_script`}}"
             ],
-            "script": "/tmp/{{user `provision_script`}}/ami_golden_script.sh"
+            "script": "/tmp/{{user `provision_script`}}"
         }
     ]
 }

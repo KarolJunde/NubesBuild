@@ -1,6 +1,6 @@
 ﻿
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Pipeline for AutoEC2RunCommands
+Description: Pipeline with GoldenAMIs
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -68,17 +68,17 @@ Parameters:
 
 Resources:
 ##############################
-  ArtifactBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      Bucket: !Ref ArtifactStoreS3
-##############################
   SourceBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      Bucket: !Ref SourceRepositoryS3   
+      BucketName: !Ref SourceRepositoryS3   
+##############################
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref ArtifactStoreS3
 ##############################
   SNSApprovalTopic:
     Type: "AWS::SNS::Topic"
@@ -177,8 +177,8 @@ Resources:
                   - "codebuild:StartBuild"
                   - "codebuild:BatchGetBuilds"
                 Resource:
-                  - Fn::Sub: arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/BuildAMI-${AWS::StackName}
-                  - Fn::Sub: arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:build/BuildAMI-${AWS::StackName}:*
+                  - Fn::Sub: arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/BuildAMI-${AWS::StackName}-${AWS::Region}
+                  - Fn::Sub: arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:build/BuildAMI-${AWS::StackName}-${AWS::Region}:*
               -
                 Effect: "Allow"
                 Action:
@@ -200,10 +200,10 @@ Resources:
 
           PolicyName: !Sub ${AWS::StackName}-policy-${AWS::Region}
 ##############################          
-  CFDeployerRole:
+  CloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-cfdeployer-role-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-cloudformation-role-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -216,10 +216,10 @@ Resources:
               - sts:AssumeRole
       Path: /
 ##############################      
-  CFDeployerPolicy:
+  CloudFormationPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${AWS::StackName}-cfdeployer-policy-${AWS::Region}
+      PolicyName: !Sub ${AWS::StackName}-cloudformation-policy-${AWS::Region}
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -258,7 +258,7 @@ Resources:
              - !Join ['',['arn:aws:s3:::',!Ref SourceBucket]]
       Roles:
         -
-          !Ref CFDeployerRole
+          !Ref CloudFormationRole
 ############################## CODE BUILD ROLE ############################## 
   CodeBuildRole:
     Type: "AWS::IAM::Role"
@@ -369,7 +369,7 @@ Resources:
     DependsOn: PipeLineRole
     Properties:
       ArtifactStore: 
-        Location: !Ref ArtifactBucket
+        Location: !Ref SourceBucket
         Type: S3
       RoleArn: !GetAtt PipeLineRole.Arn
       Name: !Ref AWS::StackName

@@ -39,9 +39,9 @@
                 "sudo rm /etc/issue",
                 "sudo ln -s /etc/motd /etc/issue",
                 "sudo yum install -y elinks screen",
-                "sudo chmod u+x /tmp/{{user `provision_script`}}"
-            ],
-            "script": "/tmp/{{user `provision_script`}}"
+                "sudo chmod u+x /tmp/{{user `provision_script`}}",
+                "/tmp/{{user `provision_script`}}"
+            ]
         }
     ]
 }

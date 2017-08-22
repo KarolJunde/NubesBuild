@@ -38,7 +38,6 @@
                 "sudo rm /etc/issue",
                 "sudo ln -s /etc/motd /etc/issue",
                 "sudo yum install -y elinks screen",
-                "sudo mkdir /tmp/{{user `provision_script`}}",
                 "sudo chmod u+x /tmp/{{user `provision_script`}}",
                 "cd /tmp/{{user `provision_script`}}",
                 "sudo ./ami_golden_script.sh"

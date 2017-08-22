@@ -1,21 +1,21 @@
 #!/bin/bash
     sudo su
-    yum update -y
-    yum install php wget -y
-    yum install python-pip -y
-    yum install ruby httpd -y
-    yum install stress -y
+    sudo yum update -y
+    sudo yum install php wget -y
+    sudo yum install python-pip -y
+    sudo yum install ruby httpd -y
+    sudo yum install stress -y
     cd /home/ec2-user
-    wget https://aws-codedeploy-eu-west-1.s3.amazonaws.com/latest/install
-    chmod +x ./install
+    sudo wget https://aws-codedeploy-eu-west-1.s3.amazonaws.com/latest/install
+    sudo chmod +x ./install
     sudo ./install auto
     #pip install --upgrade --user awscli
-    service httpd start
+    sudo service httpd start
     cd /var/www/html
-    echo "healthy!!!" > healthy.html
-    wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/index.html
-    wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/stats.php
-    service codedeploy-agent start
-    service codedeploy-agent status > /var/www/html/agentstatus.html
-    chkconfig httpd on
+    sudo echo "healthy!!!" > healthy.html
+    sudo wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/index.html
+    sudo wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/stats.php
+    sudo service codedeploy-agent start
+    sudo service codedeploy-agent status > /var/www/html/agentstatus.html
+    sudo chkconfig httpd on
 

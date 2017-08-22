@@ -38,8 +38,8 @@
                 "sudo rm /etc/issue",
                 "sudo ln -s /etc/motd /etc/issue",
                 "sudo yum install -y elinks screen",
-                "chmod u+x /tmp/{{user `provision_script`}}",
-                "/tmp/{{user `provision_script`}} ./ami_golden_script.sh"
+                "sudo chmod u+x /tmp/{{user `provision_script`}}",
+                "sudo /tmp/{{user `provision_script`}} ./ami_golden_script.sh"
             ]
         }
     ]

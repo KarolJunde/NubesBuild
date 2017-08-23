@@ -1,7 +1,7 @@
 {
     "variables": {
         "aws_region": "{{env `AWS_REGION`}}",
-        "aws_ami_name": "amazon-linux_{{isotime \"02Jan2006\"}}",
+        "aws_ami_name": "baseami-linux_{{isotime \"02Jan2006\"}}",
         "provision_script": "ami_golden_script.sh"    
     },
 
@@ -11,7 +11,7 @@
         "instance_type": "t2.micro",
         "ssh_username": "ec2-user",
         "ami_name": "{{user `aws_ami_name`}}",
-        "ami_description": "Golden Amazon Machine Image",
+        "ami_description": "BASE AMI",
         "associate_public_ip_address": "true",
         "source_ami_filter": {
             "filters": {

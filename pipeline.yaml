@@ -22,12 +22,30 @@ Metadata:
           default: "ArtifactStore"
         Parameters:
           - SourceRepositoryS3
-          - ArtifactStoreS3  
+          - ArtifactStoreS3
+       -
+        Label:
+          default: "BuilderEnv"
+        Parameters:
+          - BuilderVPC
+          - BuilderPublicSubnet
+          - CodeBuildEnv
+
+    ParameterLabels:
+      BuilderVPC: 
+        default: "Which VPC should I use?"
+      BuilderPublicSubnet: 
+        default: "Which Public Subnet should I use?"
+      CodeBuildEnv: 
+        default: "Should I use a different Docker Image?"
+      ApprovalEmail:
+        default: "Who should I notify upon completion?"  
+
 Parameters:
   GitHubRepo:
     Description: GitHub Repository Name
     Type: String
-    Default: KarolJunde/NubesBuild
+    Default: NubesBuild
   #  AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
   #  ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   GitHubUser:
@@ -44,7 +62,7 @@ Parameters:
   Topic:
     Type: String
     Description: SNS Topic
-    Default: NewAMIBuildfromGitHub
+    Default: BaseAMI-Notify
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   SourceRepositoryS3:
@@ -65,29 +83,86 @@ Parameters:
     Default: karol.junde@gmail.com
     AllowedPattern: "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)"
     ConstraintDescription: Must be a valid email address. (e.g. name@example.com)
+  BuilderVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID that AMI Builder will use to launch temporary resource
+  BuilderPublicSubnet:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public Subnet ID that AMI Builder will use to launch temporary resource
+  CodeBuildEnvironment:
+    Type: String
+    Default: "nodejs:7.0.0"
+    Description: Docker image to use for CodeBuild container - Use http://amzn.to/2mjCI91 for reference  
 
 Resources:
-##############################
+    ##################
+    # S3 Source Repo #
+    ##################
+
   SourceBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Ref SourceRepositoryS3   
-##############################
+      BucketName: !Ref SourceRepositoryS3
+
+    ####################
+    # S3 Artifact Repo #
+    ####################
+
   ArtifactBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
       BucketName: !Ref ArtifactStoreS3
-##############################
-  SNSApprovalTopic:
+
+    ####################
+    # SNS Notification #
+    ####################
+
+  AMIBuilderApprovalTopic:
     Type: "AWS::SNS::Topic"
     Properties:
       Subscription:
         -
           Endpoint: !Ref ApprovalEmail
           Protocol: "email"
-      TopicName: !Ref Topic
+      TopicName: !Ref 
+
+  AMIBuilderSNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Id: AllowCloudwatchEventsToPublish
+        Version: '2012-10-17'
+        Statement:
+          - 
+            Sid: Statement-id
+            Effect: Allow
+            Principal:
+              Service: "events.amazonaws.com"
+            Action: sns:Publish
+            Resource: !Ref AMIBuilderApprovalTopic
+      Topics:
+        - !Ref AMIBuilderApprovalTopic
+
+  AmiBuilderCustomEvent:
+    Type: "AWS::Events::Rule"
+    Properties: 
+      Description: "AMIBuilder-Complete"
+      EventPattern: 
+        source: 
+          - "com.ami.builder"
+        detail-type: 
+          - "AMIBuilder"
+        detail: 
+          AmiStatus: 
+            - "Created"
+        State: "ENABLED"
+        Targets:
+          -
+            Id: "NewBaseAMI-Notify"
+            Arn: !Ref AMIBuilderApprovalTopic            
+  
 ##############################
   CodeDeployIAMRole:
     Type: 'AWS::IAM::Role'
@@ -184,7 +259,7 @@ Resources:
                 Action:
                   - "sns:Publish"
                 Resource:
-                  - Fn::Sub: arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${SNSApprovalTopic}
+                  - !Sub ${SNSApprovalTopic}
               -
                 Effect: Allow
                 Action:
@@ -345,7 +420,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/nodejs:7.0.0
+        Image: !Sub aws/codebuild/${CodeBuildEnv}
         EnvironmentVariables:
           - Name: TEMPLATE_BUCKET
             Value: !Ref ArtifactBucket
@@ -374,9 +449,9 @@ Resources:
       RoleArn: !GetAtt PipeLineRole.Arn
       Name: !Ref AWS::StackName
       Stages:
-        - Name: CFNSource
+        - Name: GitHubInvoke
           Actions:
-            - Name: CFNTemplateSource
+            - Name: Source
               ActionTypeId:
                 Category: Source
                 Owner: ThirdParty
@@ -391,7 +466,7 @@ Resources:
                 - Name: CFNTemplateOutput
               RunOrder: 1
 ############################## STAGE 2
-        - Name: Validate
+        - Name: Build
           Actions:
             - Name: CodeBuild
               InputArtifacts:
@@ -409,7 +484,7 @@ Resources:
                   Ref: BuildAMIProject
               RunOrder: 1
 ############################## 
-        - Name: SNSBuildApproval
+        - Name: Approve
           Actions:
             - Name: ApproveBuild
               ActionTypeId:
@@ -418,14 +493,13 @@ Resources:
                 Version: 1
                 Provider: Manual
               Configuration:
-                NotificationArn:
-                  Fn::Sub: arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${SNSApprovalTopic}
-                CustomData: !Sub Approve once AMI $() build has been completed.
+                NotificationArn: !Ref AMIBuilderApprovalTopic
+                CustomData: Approve once AMI build has been completed.
               RunOrder: 2              
 Outputs:
   resbucketurl:
     Description: URL for Artifact Bucket
     Value: !GetAtt ArtifactBucket.WebsiteURL
-  SNSTopic:
-    Value: !GetAtt SNSApprovalTopic.TopicName
+  AMIBuildSNSTopic:
+    Value: !GetAtt AMIBuilderApprovalTopic.TopicName
     Description: Name of the SNS Topic for Approval

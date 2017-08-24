@@ -1,7 +1,7 @@
 {
     "variables": {
         "aws_region": "{{env `AWS_REGION`}}",
-        "aws_ami_name": "baseami-linux_{{isotime \"02Jan2006\"}}",
+        "aws_ami_name": "BASE-AMI-linux_{{isotime \"02Jan2006\"}}",
         "provision_script": "ami_golden_script.sh"    
     },
 

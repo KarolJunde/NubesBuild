@@ -23,7 +23,7 @@ Metadata:
         Parameters:
           - SourceRepositoryS3
           - ArtifactStoreS3
-       -
+      -
         Label:
           default: "BuilderEnv"
         Parameters:
@@ -61,9 +61,9 @@ Parameters:
    # ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   Topic:
     Type: String
-    Description: SNS Topic
+    Description: SNS Topic For Approval after Base AMI Build
     Default: BaseAMI-Notify
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   SourceRepositoryS3:
     Type: String
@@ -89,7 +89,7 @@ Parameters:
   BuilderPublicSubnet:
     Type: AWS::EC2::Subnet::Id
     Description: Public Subnet ID that AMI Builder will use to launch temporary resource
-  CodeBuildEnvironment:
+  CodeBuildEnv:
     Type: String
     Default: "nodejs:7.0.0"
     Description: Docker image to use for CodeBuild container - Use http://amzn.to/2mjCI91 for reference  
@@ -126,7 +126,7 @@ Resources:
         -
           Endpoint: !Ref ApprovalEmail
           Protocol: "email"
-      TopicName: !Ref 
+      TopicName: !Ref Topic
 
   AMIBuilderSNSTopicPolicy:
     Type: AWS::SNS::TopicPolicy
@@ -153,15 +153,15 @@ Resources:
         source: 
           - "com.ami.builder"
         detail-type: 
-          - "AMIBuilder"
+          - "AMI Builder"
         detail: 
           AmiStatus: 
             - "Created"
-        State: "ENABLED"
-        Targets:
-          -
-            Id: "NewBaseAMI-Notify"
-            Arn: !Ref AMIBuilderApprovalTopic            
+      State: "ENABLED"
+      Targets:
+        -
+          Id: "NewBaseAMI-Notify"
+          Arn: !Ref AMIBuilderApprovalTopic            
   
 ##############################
   CodeDeployIAMRole:
@@ -259,7 +259,7 @@ Resources:
                 Action:
                   - "sns:Publish"
                 Resource:
-                  - !Sub ${SNSApprovalTopic}
+                  - !Sub ${AMIBuilderApprovalTopic}
               -
                 Effect: Allow
                 Action:

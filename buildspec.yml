@@ -32,4 +32,4 @@ phases:
   artifacts: 
     files:
       - ami_build_event.json
-  discard-paths: yes    
+    discard-paths: yes    

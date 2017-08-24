@@ -480,10 +480,9 @@ Resources:
             #    -
             #      Name: CFNOutputArtifact
               Configuration:
-                ProjectName:
-                  Ref: BuildAMIProject
+                ProjectName: !Ref BuildAMIProject
               RunOrder: 1
-############################## 
+############################## STAGE 3
         - Name: Approve
           Actions:
             - Name: ApproveBuild

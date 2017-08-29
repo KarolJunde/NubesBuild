@@ -386,8 +386,9 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource:
-                  - Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*
-              -
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild:*
+                                -
                 Effect: "Allow"
                 Action:
                   - "s3:PutObject"
@@ -399,7 +400,8 @@ Resources:
                   - Fn::Sub: arn:aws:s3:::${ArtifactBucket}/*
                   - Fn::Sub: arn:aws:s3:::${ArtifactBucket}
                   - Fn::Sub: arn:aws:s3:::${SourceBucket}/*
-                  - Fn::Sub: arn:aws:s3:::${SourceBucket}      
+                  - Fn::Sub: arn:aws:s3:::${SourceBucket}     
+
 ############################## BUILD AMI - CODEBUILD ##############################         
   BuildAMIProject:
     Type: AWS::CodeBuild::Project
@@ -493,7 +495,7 @@ Resources:
                 Provider: Manual
               Configuration:
                 NotificationArn: !Ref AMIBuilderApprovalTopic
-                CustomData: Approve once AMI build has been completed.
+                CustomData: New AMI has been built!! Approve once AMI build has been completed.
               RunOrder: 2              
 Outputs:
   resbucketurl:

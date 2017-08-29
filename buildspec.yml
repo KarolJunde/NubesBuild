@@ -31,8 +31,9 @@ phases:
       - sed -i.bak "s/<<AMI-ID>>/$(cat ami_id.txt)/g" ami_build_event.json
       #send info to cloudwatch events
       - aws events put-events --entries file://ami_build_event.json
-      - echo "HashiCorp Packer build completed on `date`"
+      - echo "Packer build completed on `date`"
 artifacts: 
   files:
     - ami_build_event.json
+    - built.log
   discard-paths: yes    

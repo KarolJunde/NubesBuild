@@ -179,6 +179,7 @@ Resources:
       Path: '/'
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+
 ##############################          
   Application:
     Type: "AWS::CodeDeploy::Application"
@@ -192,6 +193,7 @@ Resources:
           Type: KEY_AND_VALUE
           Value: !Ref AWS::StackName
       ServiceRoleArn: !Sub '${CodeDeployIAMRole.Arn}'   
+
 ##############################
   PipeLineRole:
     Type: AWS::IAM::Role
@@ -385,10 +387,10 @@ Resources:
                   - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
+
                 Resource:
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild:*
-                                -
+                  - Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*
+              -
                 Effect: "Allow"
                 Action:
                   - "s3:PutObject"

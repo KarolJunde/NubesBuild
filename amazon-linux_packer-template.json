@@ -1,10 +1,11 @@
 {
     "variables": {
         "aws_region": "{{env `AWS_REGION`}}",
-        "aws_ami_name": "BASE-AMI-linux_{{isotime \"02Jan2006\"}}",
+        "aws_ami_name": "BaseAMI_linux_{{isotime \"02-Jan-2006\"}}",
         "provision_script": "ami_golden_script.sh",
         "retention_days": "4",
-        "team_name": "Nubes"
+        "team_name": "Nubes",
+        "environemt": "Dev"
     },
 
     "builders": [{
@@ -16,9 +17,11 @@
         "ami_description": "BASE AMI LINUX",
         "associate_public_ip_address": "true",
         "tags": {
-          "AMI": "{{user `ami_name`}}",
+          "AMI": "{{user `aws_ami_name`}}",
+          "Region": "{{user `aws_region`}}",
+          "Env": "{{user `environemt`}}",
           "Name": "{{user `team_name`}}",
-          "CreationTime": "{{isotime \"02Jan2006\"}}",
+          "CreationTime": "{{isotime \"02-Jan-2006\"}}",
           "Retention": "{{user `retention_days`}}"   
         },
         "source_ami_filter": {

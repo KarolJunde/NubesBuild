@@ -2,7 +2,9 @@
     "variables": {
         "aws_region": "{{env `AWS_REGION`}}",
         "aws_ami_name": "BASE-AMI-linux_{{isotime \"02Jan2006\"}}",
-        "provision_script": "ami_golden_script.sh"    
+        "provision_script": "ami_golden_script.sh",
+        "retention_days": "4",
+        "team_name": "Nubes"
     },
 
     "builders": [{
@@ -13,6 +15,12 @@
         "ami_name": "{{user `aws_ami_name`}}",
         "ami_description": "BASE AMI LINUX",
         "associate_public_ip_address": "true",
+        "tags": {
+          "AMI": "{{user `ami_name`}}",
+          "Name": "{{user `team_name`}}",
+          "CreationTime": "{{isotime \"02Jan2006\"}}",
+          "Retention": "{{user `retention_days`}}"   
+        },
         "source_ami_filter": {
             "filters": {
                 "virtualization-type": "hvm",

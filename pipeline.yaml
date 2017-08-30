@@ -503,7 +503,10 @@ Resources:
 Outputs:
   resbucketurl:
     Description: URL for Artifact Bucket
-    Value: !GetAtt ArtifactBucket.WebsiteURL
+    Value: !Ref ArtifactBucket
+  templatesbucket:
+    Description: URL for Bucket of Source Templates 
+    Value: !Ref ArtifactBucket  
   AMIBuildSNSTopic:
     Value: !GetAtt AMIBuilderApprovalTopic.TopicName
     Description: Name of the SNS Topic for Approval

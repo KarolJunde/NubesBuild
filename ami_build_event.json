@@ -1,14 +1,8 @@
 [
-{
-            "source": [
-              "com.ami.builder"
-            ],
-            "detail-type":[ 
-              "AMIBuilder"
-            ],
-            "detail": [ 
-              "{ \"AmiStatus\": \"Created\" }"
-            ],
-            "resources": [ "<<AMI-ID>>" ]
-}
+        {
+            "Source": "com.ami.builder",
+            "DetailType": "AmiBuilder",
+            "Detail": "{ \"AmiStatus\": \"Created\"}",
+            "Resources": [ "<<AMI-ID>>" ]
+        }
 ]

@@ -33,6 +33,7 @@ phases:
       - sed -i.bak "s/<<AMI-ID>>/$(cat ami_id.txt)/g" ami_build_event.json
       - echo "$(cat ami_build_event.json)"
       #send info about new AMI to cloudwatch events
+      #http://docs.aws.amazon.com/cli/latest/reference/events/put-events.html
       - aws events put-events --entries file://ami_build_event.json
       - echo "Packer build completed on `date`"
 artifacts: 

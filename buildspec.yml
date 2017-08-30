@@ -26,6 +26,7 @@ phases:
   post_build:
     commands:
       - egrep "${AWS_REGION}\:\sami\-" build.log | cut -d' ' -f2 > ami_id.txt
+      - echo "$(cat build.log)"
       - echo "$(cat ami_id.txt)"
       #It's a regular expression where the \s means "match whitespace" 
       #and the g is a flag which means "global", i.e. match all whitespace, not just the first.

@@ -29,7 +29,7 @@ phases:
       #It's a regular expression where the \s means "match whitespace" 
       #and the g is a flag which means "global", i.e. match all whitespace, not just the first.
       - sed -i.bak "s/<<AMI-ID>>/$(cat ami_id.txt)/g" ami_build_event.json
-      #send info to cloudwatch events
+      #send info about new AMI to cloudwatch events
       - aws events put-events --entries file://ami_build_event.json
       - echo "Packer build completed on `date`"
 artifacts: 

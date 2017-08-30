@@ -22,11 +22,11 @@ phases:
       - aws configure set aws_session_token `./jq -r '.Token' aws_credentials.json`
       - echo "Building HashiCorp Packer template, amazon-linux_packer-template.json"
       - ./packer build -color=false amazon-linux_packer-template.json | tee build.log
+      - echo "$(cat build.log)"
 
   post_build:
     commands:
       - egrep "${AWS_REGION}\:\sami\-" build.log | cut -d' ' -f2 > ami_id.txt
-      - echo "$(cat build.log)"
       - echo "$(cat ami_id.txt)"
       #It's a regular expression where the \s means "match whitespace" 
       #and the g is a flag which means "global", i.e. match all whitespace, not just the first.

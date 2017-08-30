@@ -379,6 +379,8 @@ Resources:
                   - "logs:Describe*"
                   - "logs:Get*"
                   - "tag:Get*"
+                  - "events:*"
+                  
                 Resource:
                   - "*"
               -

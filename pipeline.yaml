@@ -418,11 +418,11 @@ Resources:
         Fn::GetAtt: [ CodeBuildRole, Arn ]
 
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: CODEPIPELINE
       #  Packaging: ZIP
-      #  Location: !Ref ArtifactBucket
-      #  Name:
-      #    Fn::Sub: BuildCFN-${AWS::StackName}
+        Location: !Ref ArtifactBucket
+        Name:
+          Fn::Sub: Build-${AWS::StackName}
 
       Environment:
         Type: LINUX_CONTAINER
@@ -435,8 +435,7 @@ Resources:
             Value: codebuild
 
       Source:
-        Location: !Ref SourceBucket
-        Type: S3
+        Type: CODEPIPELINE
 
       TimeoutInMinutes: 15
      # EncryptionKey:

@@ -158,6 +158,7 @@ Resources:
           AmiStatus: 
             - "Created"
       State: "ENABLED"
+
       Targets:
         -
           Id: "NewBaseAMI-Notify"
@@ -380,7 +381,7 @@ Resources:
                   - "logs:Get*"
                   - "tag:Get*"
                   - "events:*"
-                  
+
                 Resource:
                   - "*"
               -
@@ -428,7 +429,7 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: !Sub aws/codebuild/${CodeBuildEnv}
         EnvironmentVariables:
-          - Name: TEMPLATE_BUCKET
+          - Name: OUTPUT_BUCKET
             Value: !Ref ArtifactBucket
           - Name: TEMPLATE_PREFIX
             Value: codebuild
@@ -482,9 +483,8 @@ Resources:
                 Owner: AWS
                 Version: 1
                 Provider: CodeBuild
-            #  OutputArtifacts:
-            #    -
-            #      Name: CFNOutputArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
               Configuration:
                 ProjectName: !Ref BuildAMIProject
               RunOrder: 1

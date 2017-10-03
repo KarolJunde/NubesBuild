@@ -1,5 +1,4 @@
 #!/bin/bash
-    sudo su
     sudo yum update -y
     sudo yum install php wget -y
     sudo yum install python-pip -y
@@ -11,6 +10,7 @@
     sudo ./install auto
     #pip install --upgrade --user awscli
     sudo service httpd start
+    sudo chmod a+wx /var/www/html
     cd /var/www/html
     sudo echo "healthy!!!" > healthy.html
     sudo wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/index.html

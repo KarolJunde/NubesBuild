@@ -153,11 +153,12 @@ Resources:
         source: 
           - "com.ami.builder"
         detail-type: 
-          - "AMI Builder"
+          - "AMIBuilder"
         detail: 
           AmiStatus: 
             - "Created"
       State: "ENABLED"
+
       Targets:
         -
           Id: "NewBaseAMI-Notify"
@@ -179,6 +180,7 @@ Resources:
       Path: '/'
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+
 ##############################          
   Application:
     Type: "AWS::CodeDeploy::Application"
@@ -192,6 +194,7 @@ Resources:
           Type: KEY_AND_VALUE
           Value: !Ref AWS::StackName
       ServiceRoleArn: !Sub '${CodeDeployIAMRole.Arn}'   
+
 ##############################
   PipeLineRole:
     Type: AWS::IAM::Role
@@ -377,6 +380,8 @@ Resources:
                   - "logs:Describe*"
                   - "logs:Get*"
                   - "tag:Get*"
+                  - "events:*"
+
                 Resource:
                   - "*"
               -
@@ -385,6 +390,7 @@ Resources:
                   - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
+
                 Resource:
                   - Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*
               -
@@ -399,7 +405,8 @@ Resources:
                   - Fn::Sub: arn:aws:s3:::${ArtifactBucket}/*
                   - Fn::Sub: arn:aws:s3:::${ArtifactBucket}
                   - Fn::Sub: arn:aws:s3:::${SourceBucket}/*
-                  - Fn::Sub: arn:aws:s3:::${SourceBucket}      
+                  - Fn::Sub: arn:aws:s3:::${SourceBucket}     
+
 ############################## BUILD AMI - CODEBUILD ##############################         
   BuildAMIProject:
     Type: AWS::CodeBuild::Project
@@ -411,25 +418,24 @@ Resources:
         Fn::GetAtt: [ CodeBuildRole, Arn ]
 
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: CODEPIPELINE
       #  Packaging: ZIP
-      #  Location: !Ref ArtifactBucket
-      #  Name:
-      #    Fn::Sub: BuildCFN-${AWS::StackName}
+        Location: !Ref ArtifactBucket
+        Name:
+          Fn::Sub: Build-${AWS::StackName}
 
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: !Sub aws/codebuild/${CodeBuildEnv}
         EnvironmentVariables:
-          - Name: TEMPLATE_BUCKET
+          - Name: OUTPUT_BUCKET
             Value: !Ref ArtifactBucket
           - Name: TEMPLATE_PREFIX
             Value: codebuild
 
       Source:
-        Location: !Ref SourceBucket
-        Type: S3
+        Type: CODEPIPELINE
 
       TimeoutInMinutes: 15
      # EncryptionKey:
@@ -476,9 +482,8 @@ Resources:
                 Owner: AWS
                 Version: 1
                 Provider: CodeBuild
-            #  OutputArtifacts:
-            #    -
-            #      Name: CFNOutputArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
               Configuration:
                 ProjectName: !Ref BuildAMIProject
               RunOrder: 1
@@ -493,12 +498,15 @@ Resources:
                 Provider: Manual
               Configuration:
                 NotificationArn: !Ref AMIBuilderApprovalTopic
-                CustomData: Approve once AMI build has been completed.
+                CustomData: New AMI has been built!! Approve once AMI build has been completed.
               RunOrder: 2              
 Outputs:
   resbucketurl:
     Description: URL for Artifact Bucket
-    Value: !GetAtt ArtifactBucket.WebsiteURL
+    Value: !Ref ArtifactBucket
+  templatesbucket:
+    Description: URL for Bucket of Source Templates 
+    Value: !Ref ArtifactBucket  
   AMIBuildSNSTopic:
     Value: !GetAtt AMIBuilderApprovalTopic.TopicName
     Description: Name of the SNS Topic for Approval

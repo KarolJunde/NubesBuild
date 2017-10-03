@@ -12,7 +12,7 @@
     sudo service httpd start
     sudo chmod a+wx /var/www/html
     cd /var/www/html
-    sudo echo "healthy!!!" > healthy.html
+    sudo echo "It's healthy!!!" > healthy.html
     sudo wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/index.html
     sudo wget https://s3.eu-central-1.amazonaws.com/s3-terraform-shared/stats.php
     sudo service codedeploy-agent start
